@@ -556,6 +556,15 @@
       document.getElementById('registerScreen').classList.add('flex');
     }
 
+    function normalizeUsername(username = '') {
+      return username.trim().toLowerCase();
+    }
+
+    function findUserByUsername(username) {
+      const normalized = normalizeUsername(username);
+      return allUsers.find(u => normalizeUsername(u.username) === normalized);
+    }
+
     async function handleLogin() {
       const username = document.getElementById('loginUsername').value.trim();
       const password = document.getElementById('loginPassword').value;
@@ -567,8 +576,8 @@
         return;
       }
 
-      const user = allUsers.find(u => u.username === username && u.password === password);
-      if (!user) {
+      const user = findUserByUsername(username);
+      if (!user || user.password !== password) {
         errorEl.textContent = 'Usuario o contraseña incorrectos';
         errorEl.classList.remove('hidden');
         return;
@@ -601,7 +610,7 @@
         return;
       }
 
-      const exists = allUsers.find(u => u.username === username);
+      const exists = findUserByUsername(username);
       if (exists) {
         errorEl.textContent = 'Este usuario ya existe';
         errorEl.classList.remove('hidden');
@@ -629,8 +638,29 @@
 
       const result = await window.dataSdk.create(newUser);
       if (result.isOk) {
+        const createdUser = result.value || newUser;
+        if (!createdUser.__backendId && result.id) {
+          createdUser.__backendId = result.id;
+        }
+
+        const existingIndex = allUsers.findIndex(
+          u => (createdUser.__backendId && u.__backendId === createdUser.__backendId) || normalizeUsername(u.username) === normalizeUsername(createdUser.username)
+        );
+
+        if (existingIndex >= 0) {
+          allUsers[existingIndex] = createdUser;
+        } else {
+          allUsers = [...allUsers, createdUser];
+        }
+
+        currentUser = createdUser;
+        errorEl.classList.add('hidden');
+        document.getElementById('regUsername').value = '';
+        document.getElementById('regPassword').value = '';
+
         showReward('🎉', '¡Cuenta creada!', 'Ganaste: 10⭐ + 20🪙 + 3🔑');
-        showLogin();
+        await checkDailyLogin();
+        showDashboard();
       } else {
         errorEl.textContent = 'Error al crear cuenta';
         errorEl.classList.remove('hidden');

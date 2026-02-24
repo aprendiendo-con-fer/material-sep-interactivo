@@ -1,133 +1,1258 @@
-<script>
-  let currentUser = null;
-  let allUsers = [];
-  let dataReady = false;
-
-  async function initApp() {
-    try {
-      if (window.dataSdk && typeof window.dataSdk.init === 'function') {
-        await window.dataSdk.init(dataHandler);
-        dataReady = true;
-      } else {
-        console.error('Data SDK no disponible');
-      }
-    } catch (e) {
-      console.error('Data SDK init error:', e);
+<!doctype html>
+<html lang="es" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EduEstrellas - Aprende y Gana</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&amp;display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Nunito', sans-serif; }
+    
+    .neon-glow {
+      text-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 30px currentColor;
+    }
+    
+    .neon-box {
+      box-shadow: 0 0 15px rgba(139, 92, 246, 0.5), 0 0 30px rgba(139, 92, 246, 0.3), inset 0 0 20px rgba(139, 92, 246, 0.1);
+    }
+    
+    .neon-pink {
+      box-shadow: 0 0 15px rgba(236, 72, 153, 0.5), 0 0 30px rgba(236, 72, 153, 0.3);
+    }
+    
+    .neon-green {
+      box-shadow: 0 0 15px rgba(34, 197, 94, 0.5), 0 0 30px rgba(34, 197, 94, 0.3);
+    }
+    
+    .neon-yellow {
+      box-shadow: 0 0 15px rgba(250, 204, 21, 0.5), 0 0 30px rgba(250, 204, 21, 0.3);
+    }
+    
+    .neon-cyan {
+      box-shadow: 0 0 15px rgba(6, 182, 212, 0.5), 0 0 30px rgba(6, 182, 212, 0.3);
+    }
+    
+    .floating {
+      animation: float 3s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    .pulse-glow {
+      animation: pulseGlow 2s ease-in-out infinite;
+    }
+    
+    @keyframes pulseGlow {
+      0%, 100% { filter: brightness(1); }
+      50% { filter: brightness(1.3); }
+    }
+    
+    .shake {
+      animation: shake 0.5s ease-in-out;
+    }
+    
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+    
+    .bounce-in {
+      animation: bounceIn 0.6s ease-out;
+    }
+    
+    @keyframes bounceIn {
+      0% { transform: scale(0); opacity: 0; }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    
+    .star-spin {
+      animation: starSpin 1s ease-out;
+    }
+    
+    @keyframes starSpin {
+      0% { transform: rotate(0deg) scale(0); }
+      50% { transform: rotate(180deg) scale(1.5); }
+      100% { transform: rotate(360deg) scale(1); }
+    }
+    
+    .confetti {
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+    }
+    
+    .progress-bar {
+      background: linear-gradient(90deg, #8b5cf6, #ec4899, #06b6d4);
+      background-size: 200% 100%;
+      animation: gradientMove 2s linear infinite;
+    }
+    
+    @keyframes gradientMove {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 200% 50%; }
+    }
+    
+    .game-card:hover {
+      transform: translateY(-5px) scale(1.02);
+    }
+    
+    .game-card {
+      transition: all 0.3s ease;
+    }
+    
+    .streak-fire {
+      animation: fireFlicker 0.5s ease-in-out infinite alternate;
+    }
+    
+    @keyframes fireFlicker {
+      0% { transform: scale(1) rotate(-5deg); }
+      100% { transform: scale(1.1) rotate(5deg); }
     }
 
-    if (window.elementSdk) {
-      window.elementSdk.init({
-        defaultConfig,
-        onConfigChange: async (config) => {
-          const title = document.getElementById('appTitle');
-          const welcome = document.getElementById('welcomeMsg');
-          if (title) title.textContent = config.app_title || defaultConfig.app_title;
-          if (welcome) welcome.textContent = config.welcome_message || defaultConfig.welcome_message;
-        },
-        mapToCapabilities: () => ({
-          recolorables: [],
-          borderables: [],
-          fontEditable: undefined,
-          fontSizeable: undefined
-        }),
-        mapToEditPanelValues: (config) => new Map([
-          ['app_title', config.app_title || defaultConfig.app_title],
-          ['welcome_message', config.welcome_message || defaultConfig.welcome_message]
-        ])
+    input:focus {
+      outline: none;
+      box-shadow: 0 0 20px rgba(139, 92, 246, 0.8);
+    }
+    
+    .timer-urgent {
+      animation: urgentPulse 0.5s ease-in-out infinite;
+    }
+    
+    @keyframes urgentPulse {
+      0%, 100% { color: #ef4444; transform: scale(1); }
+      50% { color: #fbbf24; transform: scale(1.1); }
+    }
+  </style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 overflow-auto">
+  <div id="app" class="h-full w-full"><!-- Login Screen -->
+   <div id="loginScreen" class="h-full w-full flex flex-col items-center justify-center p-4">
+    <div class="text-center mb-8">
+     <div class="text-6xl mb-4 floating">
+      ⭐
+     </div>
+     <h1 id="appTitle" class="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-cyan-400 neon-glow mb-2">Material SEP Interactivo</h1>
+     <p id="welcomeMsg" class="text-xl text-purple-300 font-semibold">¡Aprende y gana estrellas!</p>
+    </div>
+    <div class="bg-slate-800/80 rounded-3xl p-8 neon-box w-full max-w-md">
+     <div class="space-y-4">
+      <div><label class="block text-pink-300 font-bold mb-2 text-lg">👤 Usuario</label> <input type="text" id="loginUsername" placeholder="Tu nombre de usuario" class="w-full px-4 py-3 rounded-2xl bg-slate-700 text-white border-2 border-purple-500 text-lg font-semibold">
+      </div>
+      <div><label class="block text-cyan-300 font-bold mb-2 text-lg">🔒 Contraseña</label> <input type="password" id="loginPassword" placeholder="Tu contraseña secreta" class="w-full px-4 py-3 rounded-2xl bg-slate-700 text-white border-2 border-purple-500 text-lg font-semibold">
+      </div>
+      <p id="loginError" class="text-red-400 text-center font-semibold hidden"></p><button onclick="handleLogin()" class="w-full py-4 bg-gradient-to-r from-pink-500 to-purple-600 rounded-2xl text-white font-black text-xl neon-pink hover:scale-105 transition-transform"> 🚀 ¡ENTRAR! </button> <button onclick="showRegister()" class="w-full py-3 bg-gradient-to-r from-cyan-500 to-green-500 rounded-2xl text-white font-bold text-lg neon-green hover:scale-105 transition-transform"> ✨ Crear cuenta nueva </button>
+     </div>
+    </div>
+    <div class="mt-8 text-center">
+     <p class="text-purple-400 text-sm">Creado por la Maestra</p>
+     <p class="text-pink-400 font-bold">María Fernanda Flores Valenzuela</p><button onclick="showTerms()" class="text-cyan-400 text-sm underline mt-2 hover:text-cyan-300"> Términos y Condiciones </button>
+    </div>
+   </div><!-- Register Screen -->
+   <div id="registerScreen" class="h-full w-full hidden flex-col items-center justify-center p-4">
+    <div class="text-center mb-6">
+     <div class="text-5xl mb-3 floating">
+      🌟
+     </div>
+     <h2 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-cyan-400">¡Crea tu cuenta!</h2>
+    </div>
+    <div class="bg-slate-800/80 rounded-3xl p-6 neon-box w-full max-w-md">
+     <div class="space-y-4">
+      <div><label class="block text-green-300 font-bold mb-2">👤 Elige tu usuario</label> <input type="text" id="regUsername" placeholder="Ejemplo: estrella123" class="w-full px-4 py-3 rounded-2xl bg-slate-700 text-white border-2 border-green-500 font-semibold">
+      </div>
+      <div><label class="block text-cyan-300 font-bold mb-2">🔒 Crea tu contraseña</label> <input type="password" id="regPassword" placeholder="Mínimo 4 caracteres" class="w-full px-4 py-3 rounded-2xl bg-slate-700 text-white border-2 border-cyan-500 font-semibold">
+      </div>
+      <div><label class="block text-purple-300 font-bold mb-2">📚 Selecciona tu grado</label> <select id="regGrade" class="w-full px-4 py-3 rounded-2xl bg-slate-700 text-white border-2 border-purple-500 font-semibold"> <option value="">-- Elige tu grado --</option> <option value="1ro">1er grado 🌱</option> <option value="2do">2do grado 📚</option> <option value="3ro">3er grado ✏️</option> <option value="4to">4to grado 📖</option> <option value="5to">5to grado 🎓</option> <option value="6to">6to grado ⭐</option> </select>
+      </div>
+      <p id="regError" class="text-red-400 text-center font-semibold hidden"></p><button onclick="handleRegister()" class="w-full py-4 bg-gradient-to-r from-green-500 to-cyan-500 rounded-2xl text-white font-black text-xl neon-green hover:scale-105 transition-transform"> ✅ ¡CREAR CUENTA! </button> <button onclick="showLogin()" class="w-full py-3 bg-slate-600 rounded-2xl text-white font-bold hover:bg-slate-500 transition-colors"> ← Volver al inicio </button>
+     </div>
+    </div>
+   </div><!-- Main Dashboard -->
+   <div id="mainDashboard" class="h-full w-full hidden flex-col overflow-auto"><!-- Top Bar -->
+    <div class="bg-slate-800/90 p-3 flex flex-wrap items-center justify-between gap-2 sticky top-0 z-50">
+     <div class="flex items-center gap-2"><span class="text-2xl">👋</span> <span id="playerName" class="text-white font-bold text-lg"></span> <span id="playerGrade" class="text-purple-300 font-semibold text-sm ml-2"></span>
+     </div>
+     <div class="flex flex-wrap gap-2">
+      <div class="bg-yellow-500/20 px-3 py-1 rounded-full flex items-center gap-1 neon-yellow"><span class="text-xl">⭐</span> <span id="starsDisplay" class="text-yellow-300 font-black">0</span>
+      </div>
+      <div class="bg-amber-500/20 px-3 py-1 rounded-full flex items-center gap-1"><span class="text-xl">🪙</span> <span id="coinsDisplay" class="text-amber-300 font-black">0</span>
+      </div>
+      <div class="bg-purple-500/20 px-3 py-1 rounded-full flex items-center gap-1"><span class="text-xl">🔑</span> <span id="keysDisplay" class="text-purple-300 font-black">0</span>
+      </div>
+      <div class="bg-red-500/20 px-3 py-1 rounded-full flex items-center gap-1"><span class="text-xl">❤️</span> <span id="livesDisplay" class="text-red-300 font-black">5</span>
+      </div>
+     </div><button onclick="handleLogout()" class="bg-slate-600 px-3 py-1 rounded-full text-white text-sm hover:bg-slate-500"> Salir </button>
+    </div><!-- Level & XP Bar -->
+    <div class="bg-slate-800/50 px-4 py-2">
+     <div class="flex items-center gap-3">
+      <div class="bg-gradient-to-r from-purple-600 to-pink-600 w-12 h-12 rounded-full flex items-center justify-center neon-pink"><span id="levelDisplay" class="text-white font-black text-xl">1</span>
+      </div>
+      <div class="flex-1">
+       <div class="flex justify-between text-sm mb-1"><span class="text-purple-300 font-semibold">Nivel <span id="levelText">1</span></span> <span class="text-pink-300 font-semibold"><span id="xpCurrent">0</span>/<span id="xpNeeded">100</span> XP</span>
+       </div>
+       <div class="h-3 bg-slate-700 rounded-full overflow-hidden">
+        <div id="xpBar" class="h-full progress-bar rounded-full" style="width: 0%"></div>
+       </div>
+      </div>
+     </div>
+    </div><!-- Daily Streak -->
+    <div class="mx-4 mt-3 bg-gradient-to-r from-orange-600/30 to-red-600/30 rounded-2xl p-4 border-2 border-orange-500">
+     <div class="flex items-center justify-between">
+      <div class="flex items-center gap-2"><span class="text-3xl streak-fire">🔥</span>
+       <div>
+        <p class="text-orange-300 font-bold text-lg">Racha diaria</p>
+        <p class="text-white font-black text-2xl"><span id="streakDisplay">0</span> días</p>
+       </div>
+      </div>
+      <div class="flex gap-1">
+       <div id="streakDots" class="flex gap-1"></div>
+      </div>
+     </div>
+     <p id="day7Reward" class="text-yellow-300 text-sm mt-2 hidden">🎁 ¡Día 7 = MEGA RECOMPENSA!</p>
+    </div><!-- Daily Tasks -->
+    <div class="mx-4 mt-4 bg-slate-800/70 rounded-2xl p-4 neon-box">
+     <div class="flex items-center justify-between mb-3">
+      <h3 class="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-green-400">📋 Misiones del Día</h3>
+      <div class="text-sm bg-green-500/20 px-3 py-1 rounded-full"><span id="tasksCompleted">0</span>/5
+      </div>
+     </div>
+     <div id="dailyTasksList" class="space-y-2"></div>
+     <div id="allTasksBonus" class="hidden mt-3 bg-gradient-to-r from-yellow-500/30 to-orange-500/30 rounded-xl p-3 text-center bounce-in">
+      <p class="text-yellow-300 font-bold">🎉 ¡TODAS COMPLETADAS!</p>
+      <p class="text-white font-black text-lg">+50 ⭐ +20 🪙 BONUS</p>
+     </div>
+    </div><!-- Weekly Challenges -->
+    <div class="mx-4 mt-4 bg-slate-800/70 rounded-2xl p-4 neon-pink">
+     <h3 class="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400 mb-3">🏆 Retos Semanales</h3>
+     <div id="weeklyTasksList" class="space-y-2"></div>
+    </div><!-- Games Section -->
+    <div class="mx-4 mt-4 mb-4">
+     <h3 class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-pink-400 mb-4 text-center">🎮 ¡ELIGE TU JUEGO!</h3>
+     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3" id="gamesGrid"></div>
+    </div><!-- Shop Button -->
+    <div class="mx-4 mb-4"><button onclick="showShop()" class="w-full py-4 bg-gradient-to-r from-amber-500 to-orange-600 rounded-2xl text-white font-black text-xl neon-yellow hover:scale-105 transition-transform"> 🛒 TIENDA - Compra vidas y más </button>
+    </div>
+   </div><!-- Game Screen -->
+   <div id="gameScreen" class="h-full w-full hidden flex-col overflow-auto">
+    <div class="bg-slate-800/90 p-3 flex items-center justify-between sticky top-0 z-50"><button onclick="exitGame()" class="bg-red-500 px-4 py-2 rounded-xl text-white font-bold hover:bg-red-600"> ← Salir </button>
+     <div id="gameTimer" class="text-2xl font-black text-cyan-400">
+      ⏱️ 60
+     </div>
+     <div class="flex gap-2"><span class="text-xl">❤️</span> <span id="gameLives" class="text-red-300 font-black">5</span>
+     </div>
+    </div>
+    <div class="flex-1 p-4">
+     <div id="gameTitle" class="text-2xl font-black text-center text-white mb-4"></div>
+     <div id="gameContent" class="bg-slate-800/70 rounded-2xl p-6 neon-box"></div>
+    </div>
+    <div class="bg-slate-800/90 p-4">
+     <div class="flex justify-between items-center"><span class="text-green-400 font-bold">✅ Correctas: <span id="correctCount">0</span></span> <span class="text-red-400 font-bold">❌ Errores: <span id="wrongCount">0</span></span>
+     </div>
+    </div>
+   </div><!-- Shop Modal -->
+   <div id="shopModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 p-4">
+    <div class="bg-slate-800 rounded-3xl p-6 max-w-md w-full neon-box max-h-[90%] overflow-auto">
+     <div class="flex justify-between items-center mb-4">
+      <h2 class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-400">🛒 TIENDA</h2><button onclick="closeShop()" class="text-3xl text-white hover:text-red-400">×</button>
+     </div>
+     <div class="mb-4 p-3 bg-slate-700/50 rounded-xl">
+      <p class="text-amber-300 font-bold">Tus monedas: 🪙 <span id="shopCoins">0</span></p>
+     </div>
+     <div class="space-y-3">
+      <div class="bg-gradient-to-r from-red-600/30 to-pink-600/30 rounded-xl p-4 flex items-center justify-between">
+       <div>
+        <p class="text-white font-bold text-lg">❤️ +1 Vida</p>
+        <p class="text-red-300 text-sm">Recupera una vida</p>
+       </div><button onclick="buyItem('life', 10)" class="bg-red-500 px-4 py-2 rounded-xl text-white font-bold hover:bg-red-600"> 🪙 10 </button>
+      </div>
+      <div class="bg-gradient-to-r from-purple-600/30 to-blue-600/30 rounded-xl p-4 flex items-center justify-between">
+       <div>
+        <p class="text-white font-bold text-lg">🔑 +1 Llave</p>
+        <p class="text-purple-300 text-sm">Desbloquea juegos</p>
+       </div><button onclick="buyItem('key', 25)" class="bg-purple-500 px-4 py-2 rounded-xl text-white font-bold hover:bg-purple-600"> 🪙 25 </button>
+      </div>
+      <div class="bg-gradient-to-r from-cyan-600/30 to-green-600/30 rounded-xl p-4 flex items-center justify-between">
+       <div>
+        <p class="text-white font-bold text-lg">⚡ +50 XP</p>
+        <p class="text-cyan-300 text-sm">Sube de nivel</p>
+       </div><button onclick="buyItem('xp', 30)" class="bg-cyan-500 px-4 py-2 rounded-xl text-white font-bold hover:bg-cyan-600"> 🪙 30 </button>
+      </div>
+      <div class="bg-gradient-to-r from-yellow-600/30 to-amber-600/30 rounded-xl p-4 flex items-center justify-between">
+       <div>
+        <p class="text-white font-bold text-lg">⭐ +10 Estrellas</p>
+        <p class="text-yellow-300 text-sm">Cambia por premios</p>
+       </div><button onclick="buyItem('stars', 50)" class="bg-yellow-500 px-4 py-2 rounded-xl text-white font-bold hover:bg-yellow-600"> 🪙 50 </button>
+      </div>
+     </div>
+    </div>
+   </div><!-- Reward Modal -->
+   <div id="rewardModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 p-4">
+    <div class="bg-gradient-to-br from-purple-800 to-pink-800 rounded-3xl p-8 max-w-sm w-full text-center neon-pink bounce-in">
+     <div id="rewardIcon" class="text-7xl mb-4 star-spin">
+      🎉
+     </div>
+     <h2 id="rewardTitle" class="text-3xl font-black text-white mb-2">¡FELICIDADES!</h2>
+     <p id="rewardText" class="text-xl text-pink-200 mb-6"></p><button onclick="closeReward()" class="bg-gradient-to-r from-yellow-400 to-orange-500 px-8 py-3 rounded-2xl text-white font-black text-xl hover:scale-105 transition-transform"> ¡GENIAL! </button>
+    </div>
+   </div><!-- Terms Modal -->
+   <div id="termsModal" class="fixed inset-0 bg-black/90 hidden items-center justify-center z-50 p-4 overflow-auto">
+    <div class="bg-slate-800 rounded-3xl p-6 max-w-2xl w-full neon-box max-h-[90%] overflow-auto">
+     <div class="flex justify-between items-center mb-4">
+      <h2 class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">📜 Términos y Condiciones</h2><button onclick="closeTerms()" class="text-3xl text-white hover:text-red-400">×</button>
+     </div>
+     <div class="text-purple-200 space-y-4 text-sm">
+      <section>
+       <h3 class="text-pink-400 font-bold text-lg mb-2">1. Propiedad Intelectual</h3>
+       <p>EduEstrellas es una creación original de la Maestra María Fernanda Flores Valenzuela. Todos los derechos de autor y propiedad intelectual están reservados.</p>
+      </section>
+      <section>
+       <h3 class="text-pink-400 font-bold text-lg mb-2">2. Licencia de Uso</h3>
+       <p>Este software educativo es de uso exclusivo para maestros/docentes que hayan adquirido la licencia correspondiente mediante compra autorizada. La licencia es personal e intransferible.</p>
+      </section>
+      <section>
+       <h3 class="text-pink-400 font-bold text-lg mb-2">3. Uso Permitido</h3>
+       <ul class="list-disc list-inside space-y-1">
+        <li>Los maestros licenciados pueden usar esta herramienta con sus propios alumnos.</li>
+        <li>Se permite el uso en el aula y para tareas escolares.</li>
+        <li>El contenido es apropiado para estudiantes de 3° y 4° grado de primaria.</li>
+       </ul>
+      </section>
+      <section>
+       <h3 class="text-pink-400 font-bold text-lg mb-2">4. Restricciones</h3>
+       <ul class="list-disc list-inside space-y-1">
+        <li>Queda PROHIBIDO compartir, redistribuir o revender este software.</li>
+        <li>No se permite compartir las credenciales de acceso con otros docentes.</li>
+        <li>No se permite copiar, modificar o crear trabajos derivados.</li>
+        <li>No se permite el uso comercial más allá de la licencia adquirida.</li>
+       </ul>
+      </section>
+      <section>
+       <h3 class="text-pink-400 font-bold text-lg mb-2">5. Privacidad</h3>
+       <p>Los datos de los estudiantes son confidenciales y solo se utilizan para el funcionamiento del sistema educativo. No se comparten con terceros.</p>
+      </section>
+      <section>
+       <h3 class="text-pink-400 font-bold text-lg mb-2">6. Contacto</h3>
+       <p>Para adquirir una licencia o resolver dudas, contacte a la Maestra María Fernanda Flores Valenzuela.</p>
+      </section>
+      <div class="bg-yellow-500/20 p-4 rounded-xl mt-4">
+       <p class="text-yellow-300 font-bold text-center">⚠️ El uso no autorizado de este software constituye una violación de derechos de autor y puede resultar en acciones legales.</p>
+      </div>
+     </div><button onclick="closeTerms()" class="w-full mt-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl text-white font-bold hover:scale-105 transition-transform"> Entendido </button>
+    </div>
+   </div><!-- Game Complete Modal -->
+   <div id="gameCompleteModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 p-4">
+    <div class="bg-gradient-to-br from-green-700 to-cyan-700 rounded-3xl p-8 max-w-sm w-full text-center neon-green bounce-in">
+     <div class="text-7xl mb-4">
+      🏆
+     </div>
+     <h2 class="text-3xl font-black text-white mb-2">¡JUEGO COMPLETADO!</h2>
+     <div id="gameResults" class="text-xl text-green-200 mb-4 space-y-2"></div>
+     <div id="gameRewards" class="bg-black/30 rounded-xl p-4 mb-4">
+      <p class="text-yellow-300 font-bold text-lg">Recompensas ganadas:</p>
+      <div id="rewardsList" class="text-white font-semibold"></div>
+     </div><button onclick="closeGameComplete()" class="bg-gradient-to-r from-yellow-400 to-orange-500 px-8 py-3 rounded-2xl text-white font-black text-xl hover:scale-105 transition-transform"> ¡CONTINUAR! </button>
+    </div>
+   </div>
+  </div>
+  <script type="module">
+    const defaultConfig = {
+      app_title: 'Material SEP Interactivo',
+      welcome_message: '¡Aprende y gana estrellas!'
+    };
+    
+    let currentUser = null;
+    let currentUserProfile = null;
+    let gameTimer = null;
+    let currentGame = null;
+    let gameState = {
+      correct: 0,
+      wrong: 0,
+      timeLeft: 60,
+      questions: [],
+      currentQuestion: 0,
+      perfectRun: false
+    };
+
+    const dailyTasksTemplate = [
+      { id: 'alphabet', name: 'Resuelve el juego de Alfabetización', icon: '📚', subject: 'spanish' },
+      { id: 'math', name: 'Completa un juego de Matemáticas', icon: '🔢', subject: 'math' },
+      { id: 'english_perfect', name: 'Juega Inglés sin fallar', icon: '🇬🇧', subject: 'english', requirePerfect: true },
+      { id: 'science', name: 'Juega Ciencias Naturales', icon: '🔬', subject: 'science' },
+      { id: 'any_game', name: 'Juega cualquier juego', icon: '🎮', subject: 'any' }
+    ];
+
+    const weeklyTasksTemplate = [
+      { id: 'play_5', name: 'Juega 5 partidas', icon: '🎯', target: 5, type: 'games' },
+      { id: 'all_subjects', name: 'Juega todas las materias', icon: '📖', type: 'subjects' },
+      { id: 'streak_3', name: 'Mantén racha de 3 días', icon: '🔥', target: 3, type: 'streak' }
+    ];
+
+    const games = [
+      { id: 'spanish', name: 'Español', icon: '📚', color: 'from-pink-500 to-red-500', subject: 'spanish' },
+      { id: 'math', name: 'Matemáticas', icon: '🔢', color: 'from-blue-500 to-cyan-500', subject: 'math' },
+      { id: 'science', name: 'Ciencias', icon: '🔬', color: 'from-green-500 to-emerald-500', subject: 'science' },
+      { id: 'history', name: 'Historia', icon: '🏛️', color: 'from-amber-500 to-orange-500', subject: 'history' },
+      { id: 'geography', name: 'Geografía', icon: '🌍', color: 'from-teal-500 to-cyan-500', subject: 'geography' },
+      { id: 'socio', name: 'Socioemocional', icon: '💖', color: 'from-purple-500 to-pink-500', subject: 'socio' },
+      { id: 'english', name: 'Inglés', icon: '🇬🇧', color: 'from-red-500 to-blue-500', subject: 'english' }
+    ];
+
+    const questionsDB = {
+      spanish: [
+        { q: '¿Cuál es el plural de "lápiz"?', options: ['Lápizes', 'Lápices', 'Lapizes', 'Lapices'], correct: 1 },
+        { q: '¿Qué tipo de palabra es "rápidamente"?', options: ['Sustantivo', 'Adjetivo', 'Adverbio', 'Verbo'], correct: 2 },
+        { q: '¿Cuál es el sinónimo de "feliz"?', options: ['Triste', 'Contento', 'Enojado', 'Cansado'], correct: 1 },
+        { q: '¿Qué signo va al final de una pregunta?', options: ['.', '!', '?', ','], correct: 2 },
+        { q: 'Ordena alfabéticamente: árbol, agua, azul', options: ['árbol, agua, azul', 'agua, árbol, azul', 'azul, agua, árbol', 'agua, azul, árbol'], correct: 3 },
+        { q: '¿Cuál palabra está bien escrita?', options: ['Haber', 'Haver', 'Aber', 'Aver'], correct: 0 },
+        { q: '¿Qué es un sustantivo?', options: ['Una acción', 'Un nombre', 'Una cualidad', 'Una cantidad'], correct: 1 },
+        { q: 'El antónimo de "grande" es:', options: ['Enorme', 'Pequeño', 'Alto', 'Ancho'], correct: 1 }
+      ],
+      math: [
+        { q: '¿Cuánto es 25 + 37?', options: ['52', '62', '72', '82'], correct: 1 },
+        { q: '¿Cuánto es 8 × 7?', options: ['54', '56', '58', '48'], correct: 1 },
+        { q: '¿Cuánto es 100 - 45?', options: ['45', '55', '65', '75'], correct: 1 },
+        { q: '¿Cuál es el doble de 24?', options: ['46', '48', '50', '52'], correct: 1 },
+        { q: '¿Cuántos lados tiene un hexágono?', options: ['4', '5', '6', '8'], correct: 2 },
+        { q: '¿Cuánto es 144 ÷ 12?', options: ['10', '11', '12', '13'], correct: 2 },
+        { q: '¿Qué número sigue: 2, 4, 8, 16, ...?', options: ['18', '24', '32', '20'], correct: 2 },
+        { q: '¿Cuánto es 3/4 de 20?', options: ['10', '12', '15', '18'], correct: 2 }
+      ],
+      science: [
+        { q: '¿Qué planeta es el más cercano al Sol?', options: ['Venus', 'Tierra', 'Mercurio', 'Marte'], correct: 2 },
+        { q: '¿Qué órgano bombea la sangre?', options: ['Pulmón', 'Hígado', 'Corazón', 'Riñón'], correct: 2 },
+        { q: '¿Las plantas producen oxígeno mediante...?', options: ['Respiración', 'Fotosíntesis', 'Digestión', 'Evaporación'], correct: 1 },
+        { q: '¿Cuántos huesos tiene el cuerpo humano adulto?', options: ['106', '156', '206', '256'], correct: 2 },
+        { q: '¿Qué tipo de animal es la ballena?', options: ['Pez', 'Mamífero', 'Reptil', 'Anfibio'], correct: 1 },
+        { q: '¿Cuál es el estado del agua cuando hierve?', options: ['Sólido', 'Líquido', 'Gaseoso', 'Plasma'], correct: 2 },
+        { q: '¿Qué vitamina nos da el Sol?', options: ['A', 'B', 'C', 'D'], correct: 3 },
+        { q: '¿Los insectos tienen cuántas patas?', options: ['4', '6', '8', '10'], correct: 1 }
+      ],
+      history: [
+        { q: '¿Quién fue el primer presidente de México?', options: ['Benito Juárez', 'Guadalupe Victoria', 'Porfirio Díaz', 'Miguel Hidalgo'], correct: 1 },
+        { q: '¿En qué año inició la Independencia de México?', options: ['1800', '1810', '1821', '1910'], correct: 1 },
+        { q: '¿Quién dio el Grito de Dolores?', options: ['José María Morelos', 'Miguel Hidalgo', 'Ignacio Allende', 'Vicente Guerrero'], correct: 1 },
+        { q: '¿Qué civilización construyó Teotihuacán?', options: ['Mayas', 'Aztecas', 'Teotihuacanos', 'Olmecas'], correct: 2 },
+        { q: '¿En qué año llegó Cristóbal Colón a América?', options: ['1492', '1500', '1521', '1810'], correct: 0 },
+        { q: '¿Quién conquistó el Imperio Azteca?', options: ['Francisco Pizarro', 'Hernán Cortés', 'Pedro de Alvarado', 'Cristóbal Colón'], correct: 1 },
+        { q: '¿Qué celebramos el 5 de mayo?', options: ['Independencia', 'Revolución', 'Batalla de Puebla', 'Constitución'], correct: 2 },
+        { q: '¿Quién fue conocido como el "Benemérito de las Américas"?', options: ['Hidalgo', 'Juárez', 'Morelos', 'Madero'], correct: 1 }
+      ],
+      geography: [
+        { q: '¿Cuál es la capital de México?', options: ['Guadalajara', 'Monterrey', 'Ciudad de México', 'Puebla'], correct: 2 },
+        { q: '¿Cuántos estados tiene México?', options: ['30', '31', '32', '33'], correct: 2 },
+        { q: '¿Qué océano está al oeste de México?', options: ['Atlántico', 'Pacífico', 'Índico', 'Ártico'], correct: 1 },
+        { q: '¿Cuál es el río más largo de México?', options: ['Lerma', 'Bravo', 'Grijalva', 'Usumacinta'], correct: 1 },
+        { q: '¿Con qué país limita México al norte?', options: ['Guatemala', 'Belice', 'Estados Unidos', 'Honduras'], correct: 2 },
+        { q: '¿Cuál es el volcán más alto de México?', options: ['Popocatépetl', 'Iztaccíhuatl', 'Pico de Orizaba', 'Nevado de Toluca'], correct: 2 },
+        { q: '¿Qué península está al sureste de México?', options: ['Baja California', 'Yucatán', 'Alaska', 'Florida'], correct: 1 },
+        { q: '¿Cuál es el estado más grande de México?', options: ['Sonora', 'Chihuahua', 'Coahuila', 'Durango'], correct: 1 }
+      ],
+      socio: [
+        { q: '¿Qué es la empatía?', options: ['Sentir enojo', 'Entender los sentimientos de otros', 'Estar solo', 'No escuchar'], correct: 1 },
+        { q: 'Cuando estás enojado, ¿qué debes hacer?', options: ['Gritar', 'Golpear', 'Respirar y calmarte', 'Correr'], correct: 2 },
+        { q: '¿Qué significa ser amable?', options: ['Ignorar a otros', 'Ser grosero', 'Tratar bien a los demás', 'No compartir'], correct: 2 },
+        { q: '¿Cómo puedes ayudar a un amigo triste?', options: ['Burlarte', 'Ignorarlo', 'Escucharlo', 'Dejarlo solo'], correct: 2 },
+        { q: '¿Qué es el respeto?', options: ['Burlarse de otros', 'Tratar bien a todos', 'Gritar', 'Mentir'], correct: 1 },
+        { q: 'Si cometes un error, debes:', options: ['Mentir', 'Culpar a otro', 'Aceptarlo y aprender', 'Esconderlo'], correct: 2 },
+        { q: '¿Qué emoción sientes cuando ganas?', options: ['Tristeza', 'Alegría', 'Enojo', 'Miedo'], correct: 1 },
+        { q: 'Trabajar en equipo significa:', options: ['Hacer todo solo', 'Cooperar con otros', 'No ayudar', 'Competir'], correct: 1 }
+      ],
+      english: [
+        { q: 'How do you say "perro" in English?', options: ['Cat', 'Dog', 'Bird', 'Fish'], correct: 1 },
+        { q: 'What color is the sky?', options: ['Red', 'Green', 'Blue', 'Yellow'], correct: 2 },
+        { q: 'How many days are in a week?', options: ['Five', 'Six', 'Seven', 'Eight'], correct: 2 },
+        { q: 'What is "manzana" in English?', options: ['Orange', 'Banana', 'Apple', 'Grape'], correct: 2 },
+        { q: 'Complete: "I ___ a student."', options: ['is', 'am', 'are', 'be'], correct: 1 },
+        { q: 'What is the opposite of "big"?', options: ['Large', 'Small', 'Tall', 'Wide'], correct: 1 },
+        { q: 'How do you say "gracias" in English?', options: ['Please', 'Sorry', 'Thank you', 'Hello'], correct: 2 },
+        { q: 'What animal says "meow"?', options: ['Dog', 'Cat', 'Bird', 'Cow'], correct: 1 }
+      ]
+    };
+
+    async function initApp() {
+      // Sin Supabase Auth, solo verificamos si hay sesión local
+      if (localStorage.getItem('maestro_session')) {
+        const sessionData = JSON.parse(localStorage.getItem('maestro_session'));
+        currentUser = sessionData.user;
+        const loaded = await loadUserProfile();
+        if (loaded) {
+          await checkDailyLogin();
+          showDashboard();
+        } else {
+          showReward('❌', 'Error', 'No se pudo cargar tu perfil');
+        }
+      } else {
+        showLogin();
+      }
+
+      if (window.elementSdk) {
+        window.elementSdk.init({
+          defaultConfig,
+          onConfigChange: async (config) => {
+            const title = document.getElementById('appTitle');
+            const welcome = document.getElementById('welcomeMsg');
+            if (title) title.textContent = config.app_title || defaultConfig.app_title;
+            if (welcome) welcome.textContent = config.welcome_message || defaultConfig.welcome_message;
+          },
+          mapToCapabilities: () => ({
+            recolorables: [],
+            borderables: [],
+            fontEditable: undefined,
+            fontSizeable: undefined
+          }),
+          mapToEditPanelValues: (config) => new Map([
+            ['app_title', config.app_title || defaultConfig.app_title],
+            ['welcome_message', config.welcome_message || defaultConfig.welcome_message]
+          ])
+        });
+      }
+
+      renderGamesGrid();
+    }
+
+    async function loadUserProfile() {
+      try {
+        // Cargar datos desde localStorage (simulando base de datos)
+        const storageKey = `maestro_profile_${currentUser.id}`;
+        const stored = localStorage.getItem(storageKey);
+        
+        if (stored) {
+          currentUserProfile = JSON.parse(stored);
+          return true;
+        }
+        
+        // Si no existe, crear un nuevo perfil
+        return await createUserProfile();
+      } catch (err) {
+        console.error('Error cargando perfil:', err);
+        return false;
+      }
+    }
+
+    async function createUserProfile() {
+      try {
+        const username = 'Maestro2026';
+        
+        const newProfile = {
+          user_id: currentUser.id,
+          username,
+          grade: '1ro',
+          stars: 10,
+          coins: 20,
+          keys: 3,
+          xp: 0,
+          level: 1,
+          lives: 5,
+          daily_streak: 0,
+          last_login_date: '',
+          daily_tasks_completed: '[]',
+          weekly_tasks_completed: '[]',
+          games_played: 0
+        };
+        
+        const storageKey = `maestro_profile_${currentUser.id}`;
+        localStorage.setItem(storageKey, JSON.stringify(newProfile));
+        
+        currentUserProfile = newProfile;
+        return true;
+      } catch (err) {
+        console.error('Error inesperado:', err);
+        return false;
+      }
+    }
+
+    function showLogin() {
+      document.getElementById('registerScreen').classList.add('hidden');
+      document.getElementById('registerScreen').classList.remove('flex');
+      document.getElementById('loginScreen').classList.remove('hidden');
+      document.getElementById('loginScreen').classList.add('flex');
+    }
+
+    function showRegister() {
+      document.getElementById('loginScreen').classList.add('hidden');
+      document.getElementById('loginScreen').classList.remove('flex');
+      document.getElementById('registerScreen').classList.remove('hidden');
+      document.getElementById('registerScreen').classList.add('flex');
+    }
+
+    async function handleLogin() {
+      const username = document.getElementById('loginUsername').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      const errorEl = document.getElementById('loginError');
+      
+      // Credenciales correctas
+      const VALID_USERNAME = 'Maestro2026';
+      const VALID_PASSWORD = 'SEP20-26*';
+      
+      if (!username || !password) {
+        errorEl.textContent = '¡Completa todos los campos!';
+        errorEl.classList.remove('hidden');
+        return;
+      }
+
+      if (username === VALID_USERNAME && password === VALID_PASSWORD) {
+        // Simulamos un usuario autenticado
+        currentUser = {
+          id: 'maestro_2026_' + Date.now(),
+          email: 'maestro@sepmaterial.local',
+          user_metadata: { username: VALID_USERNAME }
+        };
+        
+        const loaded = await loadUserProfile();
+        
+        if (loaded) {
+          await checkDailyLogin();
+          showDashboard();
+          errorEl.classList.add('hidden');
+          document.getElementById('loginUsername').value = '';
+          document.getElementById('loginPassword').value = '';
+        } else {
+          errorEl.textContent = 'Error cargando perfil';
+          errorEl.classList.remove('hidden');
+        }
+      } else {
+        errorEl.textContent = 'Usuario o contraseña incorrectos';
+        errorEl.classList.remove('hidden');
+      }
+    }
+
+    async function handleRegister() {
+      const email = document.getElementById('regUsername').value.trim();
+      const password = document.getElementById('regPassword').value;
+      const grade = document.getElementById('regGrade').value;
+      const errorEl = document.getElementById('regError');
+      
+      if (!email || password.length < 6 || !grade) {
+        errorEl.textContent = 'Contraseña mínimo 6 caracteres y elige grado';
+        errorEl.classList.remove('hidden');
+        return;
+      }
+
+      try {
+        const { error } = await supabase.auth.signUp({ 
+          email, 
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}?type=recovery`
+          }
+        });
+        
+        if (error) {
+          errorEl.textContent = error.message;
+          errorEl.classList.remove('hidden');
+          return;
+        }
+
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) {
+          errorEl.textContent = 'Error al crear usuario';
+          errorEl.classList.remove('hidden');
+          return;
+        }
+
+        currentUser = user;
+        
+        const { error: profileError } = await supabase
+          .from('user_profiles')
+          .insert({
+            user_id: currentUser.id,
+            username: email.split('@')[0],
+            grade,
+            stars: 10,
+            coins: 20,
+            keys: 3,
+            xp: 0,
+            level: 1,
+            lives: 5,
+            daily_streak: 0,
+            last_login_date: '',
+            daily_tasks_completed: '[]',
+            weekly_tasks_completed: '[]',
+            games_played: 0
+          });
+        
+        if (profileError) {
+          console.error('Error creando perfil:', profileError);
+          errorEl.textContent = 'Error creando perfil';
+          errorEl.classList.remove('hidden');
+          return;
+        }
+
+        showReward('🎉', '¡Cuenta creada!', 'Ganaste: 10⭐ + 20🪙 + 3🔑');
+        document.getElementById('regUsername').value = '';
+        document.getElementById('regPassword').value = '';
+        document.getElementById('regGrade').value = '';
+        errorEl.classList.add('hidden');
+        setTimeout(() => showLogin(), 2000);
+      } catch (err) {
+        console.error('Error registro:', err);
+        errorEl.textContent = 'Error de conexión';
+        errorEl.classList.remove('hidden');
+      }
+    }
+
+    async function handleLogout() {
+      try {
+        currentUser = null;
+        currentUserProfile = null;
+        localStorage.removeItem('maestro_session');
+        document.getElementById('mainDashboard').classList.add('hidden');
+        document.getElementById('loginScreen').classList.remove('hidden');
+        document.getElementById('loginScreen').classList.add('flex');
+        document.getElementById('loginUsername').value = '';
+        document.getElementById('loginPassword').value = '';
+      } catch (err) {
+        console.error('Error logout:', err);
+      }
+    }
+
+    async function checkDailyLogin() {
+      const today = new Date().toDateString();
+      const lastLogin = currentUserProfile.last_login_date;
+      
+      if (lastLogin !== today) {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        
+        let newStreak = 1;
+        let streakBonus = false;
+        
+        if (lastLogin === yesterday.toDateString()) {
+          newStreak = (currentUserProfile.daily_streak || 0) + 1;
+        }
+        
+        let starsReward = 5;
+        let coinsReward = 5;
+        
+        if (newStreak % 7 === 0) {
+          starsReward = 50;
+          coinsReward = 30;
+          streakBonus = true;
+        }
+
+        try {
+          currentUserProfile.daily_streak = newStreak;
+          currentUserProfile.last_login_date = today;
+          currentUserProfile.stars = (currentUserProfile.stars || 0) + starsReward;
+          currentUserProfile.coins = (currentUserProfile.coins || 0) + coinsReward;
+          currentUserProfile.daily_tasks_completed = '[]';
+          
+          const storageKey = `maestro_profile_${currentUser.id}`;
+          localStorage.setItem(storageKey, JSON.stringify(currentUserProfile));
+          
+          if (streakBonus) {
+            showReward('🎁', '¡DÍA 7 - MEGA RECOMPENSA!', `+${starsReward}⭐ +${coinsReward}🪙`);
+          } else {
+            showReward('🌟', `¡Día ${newStreak} de racha!`, `+${starsReward}⭐ +${coinsReward}🪙`);
+          }
+        } catch (err) {
+          console.error('Error inesperado:', err);
+        }
+      }
+    }
+
+    function showDashboard() {
+      document.getElementById('loginScreen').classList.add('hidden');
+      document.getElementById('loginScreen').classList.remove('flex');
+      document.getElementById('registerScreen').classList.add('hidden');
+      document.getElementById('mainDashboard').classList.remove('hidden');
+      document.getElementById('mainDashboard').classList.add('flex');
+      updateUI();
+    }
+
+    function updateUI() {
+      if (!currentUserProfile) return;
+      
+      document.getElementById('playerName').textContent = currentUserProfile.username;
+      document.getElementById('playerGrade').textContent = `(${currentUserProfile.grade})`;
+      document.getElementById('starsDisplay').textContent = currentUserProfile.stars || 0;
+      document.getElementById('coinsDisplay').textContent = currentUserProfile.coins || 0;
+      document.getElementById('keysDisplay').textContent = currentUserProfile.keys || 0;
+      document.getElementById('livesDisplay').textContent = currentUserProfile.lives || 0;
+      
+      const level = currentUserProfile.level || 1;
+      const xp = currentUserProfile.xp || 0;
+      const xpNeeded = level * 100;
+      const xpPercent = Math.min((xp / xpNeeded) * 100, 100);
+      
+      document.getElementById('levelDisplay').textContent = level;
+      document.getElementById('levelText').textContent = level;
+      document.getElementById('xpCurrent').textContent = xp;
+      document.getElementById('xpNeeded').textContent = xpNeeded;
+      document.getElementById('xpBar').style.width = xpPercent + '%';
+      
+      const streak = currentUserProfile.daily_streak || 0;
+      document.getElementById('streakDisplay').textContent = streak;
+      
+      const streakDots = document.getElementById('streakDots');
+      streakDots.innerHTML = '';
+      for (let i = 1; i <= 7; i++) {
+        const dot = document.createElement('div');
+        dot.className = `w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
+          i <= (streak % 7 || (streak > 0 && streak % 7 === 0 ? 7 : 0)) 
+            ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white' 
+            : 'bg-slate-600 text-slate-400'
+        }`;
+        dot.textContent = i;
+        streakDots.appendChild(dot);
+      }
+      
+      if (streak >= 6 && streak % 7 !== 0) {
+        document.getElementById('day7Reward').classList.remove('hidden');
+      } else {
+        document.getElementById('day7Reward').classList.add('hidden');
+      }
+      
+      renderDailyTasks();
+      renderWeeklyTasks();
+    }
+
+    function renderDailyTasks() {
+      const container = document.getElementById('dailyTasksList');
+      const completed = JSON.parse(currentUserProfile.daily_tasks_completed || '[]');
+      
+      container.innerHTML = '';
+      let completedCount = 0;
+      
+      dailyTasksTemplate.forEach(task => {
+        const isDone = completed.includes(task.id);
+        if (isDone) completedCount++;
+        
+        const div = document.createElement('div');
+        div.className = `flex items-center gap-3 p-3 rounded-xl ${isDone ? 'bg-green-500/20' : 'bg-slate-700/50'}`;
+        div.innerHTML = `
+          <span class="text-2xl">${isDone ? '✅' : task.icon}</span>
+          <span class="flex-1 font-semibold ${isDone ? 'text-green-300 line-through' : 'text-white'}">${task.name}</span>
+          <span class="text-yellow-300 font-bold">+5⭐</span>
+        `;
+        container.appendChild(div);
+      });
+      
+      document.getElementById('tasksCompleted').textContent = completedCount;
+      
+      if (completedCount >= 5) {
+        document.getElementById('allTasksBonus').classList.remove('hidden');
+      } else {
+        document.getElementById('allTasksBonus').classList.add('hidden');
+      }
+    }
+
+    function renderWeeklyTasks() {
+      const container = document.getElementById('weeklyTasksList');
+      const weeklyCompleted = JSON.parse(currentUserProfile.weekly_tasks_completed || '[]');
+      
+      container.innerHTML = '';
+      
+      weeklyTasksTemplate.forEach(task => {
+        const isDone = weeklyCompleted.includes(task.id);
+        let progress = '';
+        
+        if (task.type === 'games') {
+          progress = `${Math.min(currentUserProfile.games_played || 0, task.target)}/${task.target}`;
+        } else if (task.type === 'streak') {
+          progress = `${Math.min(currentUserProfile.daily_streak || 0, task.target)}/${task.target}`;
+        }
+        
+        const div = document.createElement('div');
+        div.className = `flex items-center gap-3 p-3 rounded-xl ${isDone ? 'bg-pink-500/20' : 'bg-slate-700/50'}`;
+        div.innerHTML = `
+          <span class="text-2xl">${isDone ? '🏆' : task.icon}</span>
+          <div class="flex-1">
+            <span class="font-semibold ${isDone ? 'text-pink-300' : 'text-white'}">${task.name}</span>
+            ${progress ? `<span class="text-sm text-purple-300 ml-2">(${progress})</span>` : ''}
+          </div>
+          <span class="text-yellow-300 font-bold">+20⭐</span>
+        `;
+        container.appendChild(div);
       });
     }
 
-    renderGamesGrid();
-  }
-
-  async function handleRegister() {
-    const username = document.getElementById('regUsername').value.trim();
-    const password = document.getElementById('regPassword').value;
-    const grade = document.getElementById('regGrade').value;
-    const errorEl = document.getElementById('regError');
-
-    if (!username || password.length < 4 || !grade) {
-      errorEl.textContent = 'Completa todos los campos (contraseña mínimo 4)';
-      errorEl.classList.remove('hidden');
-      return;
+    function renderGamesGrid() {
+      const container = document.getElementById('gamesGrid');
+      container.innerHTML = '';
+      
+      games.forEach(game => {
+        const card = document.createElement('div');
+        card.className = `game-card bg-gradient-to-br ${game.color} rounded-2xl p-4 cursor-pointer neon-box`;
+        card.onclick = () => startGame(game);
+        card.innerHTML = `
+          <div class="text-4xl text-center mb-2 floating">${game.icon}</div>
+          <p class="text-white font-bold text-center text-sm">${game.name}</p>
+        `;
+        container.appendChild(card);
+      });
     }
 
-    if (!window.dataSdk || typeof window.dataSdk.create !== 'function' || !dataReady) {
-      errorEl.textContent = 'El servicio de datos no está listo. Recarga la página e intenta de nuevo.';
-      errorEl.classList.remove('hidden');
-      return;
+    function startGame(game) {
+      if (currentUserProfile.lives <= 0) {
+        showReward('💔', '¡Sin vidas!', 'Compra vidas en la tienda');
+        return;
+      }
+      
+      currentGame = game;
+      gameState = {
+        correct: 0,
+        wrong: 0,
+        timeLeft: 60,
+        questions: [],
+        currentQuestion: 0,
+        perfectRun: true
+      };
+      
+      document.getElementById('mainDashboard').classList.add('hidden');
+      document.getElementById('mainDashboard').classList.remove('flex');
+      document.getElementById('gameScreen').classList.remove('hidden');
+      document.getElementById('gameScreen').classList.add('flex');
+      
+      document.getElementById('gameTitle').textContent = `${game.icon} ${game.name}`;
+      document.getElementById('gameLives').textContent = currentUserProfile.lives;
+      document.getElementById('correctCount').textContent = 0;
+      document.getElementById('wrongCount').textContent = 0;
+      
+      showSubjectMenu(game);
     }
 
-    if (allUsers.length >= 999) {
-      errorEl.textContent = 'Límite de usuarios alcanzado';
-      errorEl.classList.remove('hidden');
-      return;
+    function showSubjectMenu(game) {
+      const container = document.getElementById('gameContent');
+      container.innerHTML = `
+        <div class="text-center space-y-4">
+          <p class="text-xl text-purple-300 font-bold mb-6">¿Cuántas preguntas deseas?</p>
+          <button onclick="window.startGameQuestions(5, '${game.subject}')" class="w-full py-4 px-6 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-xl text-white font-black text-xl hover:scale-105 transition-transform">
+            ⚡ 5 preguntas (Rápido)
+          </button>
+          <button onclick="window.startGameQuestions(10, '${game.subject}')" class="w-full py-4 px-6 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl text-white font-black text-xl hover:scale-105 transition-transform">
+            🎯 10 preguntas (Normal)
+          </button>
+          <button onclick="window.startGameQuestions(15, '${game.subject}')" class="w-full py-4 px-6 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl text-white font-black text-xl hover:scale-105 transition-transform">
+            🔥 15 preguntas (Desafío)
+          </button>
+          <button onclick="window.exitGame()" class="w-full py-4 px-6 bg-slate-600 rounded-xl text-white font-bold text-lg hover:bg-slate-500 transition-colors mt-6">
+            ← Volver
+          </button>
+        </div>
+      `;
     }
 
-    const exists = findUserByUsername(username);
-    if (exists) {
-      errorEl.textContent = 'Este usuario ya existe';
-      errorEl.classList.remove('hidden');
-      return;
-    }
-
-    const newUser = {
-      id: Date.now().toString(),
-      username,
-      password,
-      grade,
-      stars: 10,
-      coins: 20,
-      keys: 3,
-      xp: 0,
-      level: 1,
-      lives: 5,
-      dailyStreak: 0,
-      lastLoginDate: '',
-      dailyTasksCompleted: '[]',
-      weeklyTasksCompleted: '[]',
-      subjectsPlayedWeekly: '[]',
-      gamesPlayed: 0,
-      createdAt: new Date().toISOString()
+    window.startGameQuestions = function(count, subject) {
+      gameState.questions = shuffleArray([...questionsDB[subject]]).slice(0, count);
+      gameState.currentQuestion = 0;
+      showQuestion();
+      startTimer();
     };
 
-    try {
-      const result = await window.dataSdk.create(newUser);
-      const isOk = result?.isOk === true || !!result?.value || !!result?.id;
-
-      if (isOk) {
-        const createdUser = result.value || { ...newUser };
-        if (!createdUser.__backendId && result.id) {
-          createdUser.__backendId = result.id;
-        }
-
-        const existingIndex = allUsers.findIndex(
-          u => (createdUser.__backendId && u.__backendId === createdUser.__backendId) ||
-               normalizeUsername(u.username) === normalizeUsername(createdUser.username)
-        );
-
-        if (existingIndex >= 0) {
-          allUsers[existingIndex] = createdUser;
-        } else {
-          allUsers = [...allUsers, createdUser];
-        }
-
-        currentUser = createdUser;
-        errorEl.classList.add('hidden');
-        document.getElementById('regUsername').value = '';
-        document.getElementById('regPassword').value = '';
-
-        showReward('🎉', '¡Cuenta creada!', 'Ganaste: 10⭐ + 20🪙 + 3🔑');
-        await checkDailyLogin();
-        showDashboard();
-      } else {
-        errorEl.textContent = 'Error al crear cuenta';
-        errorEl.classList.remove('hidden');
+    function showQuestion() {
+      if (gameState.currentQuestion >= gameState.questions.length) {
+        endGame();
+        return;
       }
-    } catch (error) {
-      console.error('Register error:', error);
-      errorEl.textContent = 'No se pudo crear la cuenta. Revisa conexión y vuelve a intentar.';
-      errorEl.classList.remove('hidden');
+      
+      const q = gameState.questions[gameState.currentQuestion];
+      const container = document.getElementById('gameContent');
+      
+      container.innerHTML = `
+        <p class="text-sm text-purple-300 mb-2">Pregunta ${gameState.currentQuestion + 1}/${gameState.questions.length}</p>
+        <h3 class="text-xl font-bold text-white mb-6">${q.q}</h3>
+        <div class="grid grid-cols-1 gap-3" id="optionsContainer"></div>
+      `;
+      
+      const optContainer = document.getElementById('optionsContainer');
+      q.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'w-full py-4 px-6 bg-slate-700 hover:bg-slate-600 rounded-xl text-white font-bold text-lg transition-all hover:scale-102';
+        btn.textContent = opt;
+        btn.onclick = () => checkAnswer(idx);
+        optContainer.appendChild(btn);
+      });
     }
-  }
-</script>
+
+    async function checkAnswer(selected) {
+      const q = gameState.questions[gameState.currentQuestion];
+      const buttons = document.getElementById('optionsContainer').children;
+      
+      Array.from(buttons).forEach(btn => btn.disabled = true);
+      
+      if (selected === q.correct) {
+        buttons[selected].classList.add('bg-green-500', 'scale-105');
+        gameState.correct++;
+        document.getElementById('correctCount').textContent = gameState.correct;
+        createConfetti();
+      } else {
+        buttons[selected].classList.add('bg-red-500', 'shake');
+        buttons[q.correct].classList.add('bg-green-500');
+        gameState.wrong++;
+        gameState.perfectRun = false;
+        document.getElementById('wrongCount').textContent = gameState.wrong;
+        
+        currentUserProfile.lives = Math.max(0, (currentUserProfile.lives || 0) - 1);
+        document.getElementById('gameLives').textContent = currentUserProfile.lives;
+        
+        const storageKey = `maestro_profile_${currentUser.id}`;
+        localStorage.setItem(storageKey, JSON.stringify(currentUserProfile));
+      }
+      
+      setTimeout(() => {
+        gameState.currentQuestion++;
+        showQuestion();
+      }, 1000);
+    }
+
+    function startTimer() {
+      clearInterval(gameTimer);
+      const timerEl = document.getElementById('gameTimer');
+      
+      gameTimer = setInterval(() => {
+        gameState.timeLeft--;
+        timerEl.textContent = `⏱️ ${gameState.timeLeft}`;
+        
+        if (gameState.timeLeft <= 10) {
+          timerEl.classList.add('timer-urgent');
+        }
+        
+        if (gameState.timeLeft <= 0) {
+          endGame();
+        }
+      }, 1000);
+    }
+
+    async function endGame() {
+      clearInterval(gameTimer);
+      
+      const starsEarned = gameState.correct * 3;
+      const coinsEarned = gameState.correct * 2;
+      const xpEarned = gameState.correct * 10;
+      
+      let newStars = (currentUserProfile.stars || 0) + starsEarned;
+      let newCoins = (currentUserProfile.coins || 0) + coinsEarned;
+      let newXp = (currentUserProfile.xp || 0) + xpEarned;
+      let newLevel = currentUserProfile.level || 1;
+      let newKeys = currentUserProfile.keys || 0;
+      let newGames = (currentUserProfile.games_played || 0) + 1;
+      
+      const xpNeeded = newLevel * 100;
+      if (newXp >= xpNeeded) {
+        newLevel++;
+        newXp = newXp - xpNeeded;
+        newKeys++;
+      }
+      
+      let dailyCompleted = JSON.parse(currentUserProfile.daily_tasks_completed || '[]');
+      const subject = currentGame.subject;
+      
+      if (subject === 'spanish' && !dailyCompleted.includes('alphabet')) {
+        dailyCompleted.push('alphabet');
+        newStars += 5;
+      }
+      if (subject === 'math' && !dailyCompleted.includes('math')) {
+        dailyCompleted.push('math');
+        newStars += 5;
+      }
+      if (subject === 'science' && !dailyCompleted.includes('science')) {
+        dailyCompleted.push('science');
+        newStars += 5;
+      }
+      if (subject === 'english' && gameState.perfectRun && !dailyCompleted.includes('english_perfect')) {
+        dailyCompleted.push('english_perfect');
+        newStars += 5;
+      }
+      if (!dailyCompleted.includes('any_game')) {
+        dailyCompleted.push('any_game');
+        newStars += 5;
+      }
+      
+      if (dailyCompleted.length >= 5) {
+        const hadBonus = JSON.parse(currentUserProfile.daily_tasks_completed || '[]').length >= 5;
+        if (!hadBonus) {
+          newStars += 50;
+          newCoins += 20;
+        }
+      }
+      
+      let weeklyCompleted = JSON.parse(currentUserProfile.weekly_tasks_completed || '[]');
+      if (newGames >= 5 && !weeklyCompleted.includes('play_5')) {
+        weeklyCompleted.push('play_5');
+        newStars += 20;
+      }
+      if (currentUserProfile.daily_streak >= 3 && !weeklyCompleted.includes('streak_3')) {
+        weeklyCompleted.push('streak_3');
+        newStars += 20;
+      }
+      
+      // Guardar en localStorage
+      currentUserProfile.stars = newStars;
+      currentUserProfile.coins = newCoins;
+      currentUserProfile.xp = newXp;
+      currentUserProfile.level = newLevel;
+      currentUserProfile.keys = newKeys;
+      currentUserProfile.games_played = newGames;
+      currentUserProfile.daily_tasks_completed = JSON.stringify(dailyCompleted);
+      currentUserProfile.weekly_tasks_completed = JSON.stringify(weeklyCompleted);
+      
+      const storageKey = `maestro_profile_${currentUser.id}`;
+      localStorage.setItem(storageKey, JSON.stringify(currentUserProfile));
+      
+      document.getElementById('gameResults').innerHTML = `
+        <p>✅ Correctas: <span class="text-green-400 font-black">${gameState.correct}</span></p>
+        <p>❌ Errores: <span class="text-red-400 font-black">${gameState.wrong}</span></p>
+        ${gameState.perfectRun ? '<p class="text-yellow-300 font-bold">🌟 ¡PERFECTO!</p>' : ''}
+      `;
+      
+      document.getElementById('rewardsList').innerHTML = `
+        <p>⭐ +${starsEarned} estrellas</p>
+        <p>🪙 +${coinsEarned} monedas</p>
+        <p>⚡ +${xpEarned} XP</p>
+      `;
+      
+      document.getElementById('gameCompleteModal').classList.remove('hidden');
+      document.getElementById('gameCompleteModal').classList.add('flex');
+    }
+
+    window.exitGame = function() {
+      clearInterval(gameTimer);
+      document.getElementById('gameScreen').classList.add('hidden');
+      document.getElementById('gameScreen').classList.remove('flex');
+      document.getElementById('mainDashboard').classList.remove('hidden');
+      document.getElementById('mainDashboard').classList.add('flex');
+      updateUI();
+    };
+
+    window.closeGameComplete = function() {
+      document.getElementById('gameCompleteModal').classList.add('hidden');
+      document.getElementById('gameCompleteModal').classList.remove('flex');
+      window.exitGame();
+    };
+
+    window.showShop = function() {
+      document.getElementById('shopCoins').textContent = currentUserProfile.coins || 0;
+      document.getElementById('shopModal').classList.remove('hidden');
+      document.getElementById('shopModal').classList.add('flex');
+    };
+
+    window.closeShop = function() {
+      document.getElementById('shopModal').classList.add('hidden');
+      document.getElementById('shopModal').classList.remove('flex');
+    };
+
+    window.buyItem = async function(type, cost) {
+      if ((currentUserProfile.coins || 0) < cost) {
+        showReward('😢', '¡No tienes suficientes monedas!', `Necesitas ${cost}🪙`);
+        return;
+      }
+      
+      let newLives = currentUserProfile.lives;
+      let newKeys = currentUserProfile.keys;
+      let newXp = currentUserProfile.xp;
+      let newStars = currentUserProfile.stars;
+      let newCoins = currentUserProfile.coins - cost;
+      
+      switch(type) {
+        case 'life':
+          newLives++;
+          showReward('❤️', '¡+1 Vida!', 'Sigue jugando');
+          break;
+        case 'key':
+          newKeys++;
+          showReward('🔑', '¡+1 Llave!', 'Desbloquea juegos');
+          break;
+        case 'xp':
+          newXp += 50;
+          showReward('⚡', '¡+50 XP!', 'Sube de nivel');
+          break;
+        case 'stars':
+          newStars += 10;
+          showReward('⭐', '¡+10 Estrellas!', 'Cambia por premios');
+          break;
+      }
+      
+      // Guardar en localStorage
+      currentUserProfile.lives = newLives;
+      currentUserProfile.keys = newKeys;
+      currentUserProfile.xp = newXp;
+      currentUserProfile.stars = newStars;
+      currentUserProfile.coins = newCoins;
+      
+      const storageKey = `maestro_profile_${currentUser.id}`;
+      localStorage.setItem(storageKey, JSON.stringify(currentUserProfile));
+      
+      document.getElementById('shopCoins').textContent = newCoins;
+      updateUI();
+    };
+
+    function showReward(icon, title, text) {
+      document.getElementById('rewardIcon').textContent = icon;
+      document.getElementById('rewardTitle').textContent = title;
+      document.getElementById('rewardText').textContent = text;
+      document.getElementById('rewardModal').classList.remove('hidden');
+      document.getElementById('rewardModal').classList.add('flex');
+    }
+
+    window.closeReward = function() {
+      document.getElementById('rewardModal').classList.add('hidden');
+      document.getElementById('rewardModal').classList.remove('flex');
+    };
+
+    window.showTerms = function() {
+      document.getElementById('termsModal').classList.remove('hidden');
+      document.getElementById('termsModal').classList.add('flex');
+    };
+
+    window.closeTerms = function() {
+      document.getElementById('termsModal').classList.add('hidden');
+      document.getElementById('termsModal').classList.remove('flex');
+    };
+
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function createConfetti() {
+      const colors = ['#fbbf24', '#ec4899', '#06b6d4', '#22c55e', '#8b5cf6'];
+      for (let i = 0; i < 20; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.cssText = `
+          left: ${Math.random() * 100}%;
+          top: ${Math.random() * 50}%;
+          width: 10px;
+          height: 10px;
+          background: ${colors[Math.floor(Math.random() * colors.length)]};
+          border-radius: 50%;
+          animation: confettiFall 1s ease-out forwards;
+        `;
+        document.body.appendChild(confetti);
+        setTimeout(() => confetti.remove(), 1000);
+      }
+    }
+
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes confettiFall {
+        0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+        100% { transform: translateY(100px) rotate(720deg); opacity: 0; }
+      }
+    `;
+    document.head.appendChild(style);
+
+    window.handleLogin = handleLogin;
+    window.handleRegister = handleRegister;
+    window.handleLogout = handleLogout;
+    window.showLogin = showLogin;
+    window.showRegister = showRegister;
+
+    initApp();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9d31462210dbb0bd',t:'MTc3MTk2MDM0MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

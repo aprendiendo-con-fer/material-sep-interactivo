@@ -1,240 +1,212 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <title>Material SEP Interactivo</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #f5f5f5;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-
-    .container {
-      background: white;
-      padding: 30px;
-      border-radius: 12px;
-      width: 320px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    }
-
-    h2 {
-      margin-top: 0;
-      text-align: center;
-    }
-
-    input {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 10px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-    }
-
-    button {
-      width: 100%;
-      padding: 10px;
-      border-radius: 6px;
-      border: none;
-      background-color: #4CAF50;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    button:hover {
-      opacity: 0.9;
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    .error {
-      color: red;
-      font-size: 14px;
-      margin-bottom: 10px;
-    }
-
-    .stats {
-      margin: 15px 0;
-      font-size: 16px;
-    }
-  </style>
+<style>body { box-sizing: border-box; }</style>
 </head>
-
-<body>
-
-<div class="container">
-
-  <div id="loginView">
-    <h2>Iniciar Sesión</h2>
-    <div id="loginError" class="error"></div>
-    <input type="email" id="loginEmail" placeholder="Correo">
-    <input type="password" id="loginPassword" placeholder="Contraseña">
-    <button onclick="handleLogin()">Entrar</button>
-    <p style="text-align:center;margin-top:10px;">
-      <a href="#" onclick="showRegister()">Crear cuenta</a>
-    </p>
-  </div>
-
-  <div id="registerView" class="hidden">
-    <h2>Crear Cuenta</h2>
-    <div id="registerError" class="error"></div>
-    <input type="email" id="registerEmail" placeholder="Correo">
-    <input type="password" id="registerPassword" placeholder="Contraseña">
-    <button onclick="handleRegister()">Registrarse</button>
-    <p style="text-align:center;margin-top:10px;">
-      <a href="#" onclick="showLogin()">Ya tengo cuenta</a>
-    </p>
-  </div>
-
-  <div id="dashboardView" class="hidden">
-    <h2>Panel</h2>
-
-    <div class="stats">
-      ⭐ Estrellas: <span id="stars">0</span><br>
-      🪙 Monedas: <span id="coins">0</span><br>
-      ❤️ Vidas: <span id="lives">3</span>
-    </div>
-
-    <button onclick="addStar()">Ganar Estrella</button>
-    <br><br>
-    <button onclick="logout()" style="background-color:#e74c3c;">Cerrar sesión</button>
-  </div>
-
+<body class="h-full bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 overflow-auto">
+  <div id="app" class="h-full w-full">
+   <!-- Login Screen -->
+  <div id="app" class="h-full w-full"><!-- Login Screen -->
+<div id="loginScreen" class="h-full w-full flex flex-col items-center justify-center p-4">
+<div class="text-center mb-8">
+<div class="text-6xl mb-4 floating">
+⭐
 </div>
-
+     <h1 id="appTitle" class="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-cyan-400 neon-glow mb-2">Material SEP Interactivo</h1>
+     <h1 id="appTitle" class="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-cyan-400 neon-glow mb-2">EduEstrellas</h1>
+<p id="welcomeMsg" class="text-xl text-purple-300 font-semibold">¡Aprende y gana estrellas!</p>
+</div>
+<div class="bg-slate-800/80 rounded-3xl p-8 neon-box w-full max-w-md">
+<div class="space-y-4">
+      <div>
+       <label class="block text-pink-300 font-bold mb-2 text-lg">👤 Usuario</label> <input type="text" id="loginUsername" placeholder="Tu nombre de usuario" class="w-full px-4 py-3 rounded-2xl bg-slate-700 text-white border-2 border-purple-500 text-lg font-semibold">
+      <div><label class="block text-pink-300 font-bold mb-2 text-lg">👤 Usuario</label> <input type="text" id="loginUsername" placeholder="Tu nombre de usuario" class="w-full px-4 py-3 rounded-2xl bg-slate-700 text-white border-2 border-purple-500 text-lg font-semibold">
+</div>
+      <div>
+       <label class="block text-cyan-300 font-bold mb-2 text-lg">🔒 Contraseña</label> <input type="password" id="loginPassword" placeholder="Tu contraseña secreta" class="w-full px-4 py-3 rounded-2xl bg-slate-700 text-white border-2 border-purple-500 text-lg font-semibold">
+      <div><label class="block text-cyan-300 font-bold mb-2 text-lg">🔒 Contraseña</label> <input type="password" id="loginPassword" placeholder="Tu contraseña secreta" class="w-full px-4 py-3 rounded-2xl bg-slate-700 text-white border-2 border-purple-500 text-lg font-semibold">
+</div>
+<p id="loginError" class="text-red-400 text-center font-semibold hidden"></p><button onclick="handleLogin()" class="w-full py-4 bg-gradient-to-r from-pink-500 to-purple-600 rounded-2xl text-white font-black text-xl neon-pink hover:scale-105 transition-transform"> 🚀 ¡ENTRAR! </button> <button onclick="showRegister()" class="w-full py-3 bg-gradient-to-r from-cyan-500 to-green-500 rounded-2xl text-white font-bold text-lg neon-green hover:scale-105 transition-transform"> ✨ Crear cuenta nueva </button>
+</div>
+@@ -169,48 +166,37 @@ <h2 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r fr
+</div>
+<div class="bg-slate-800/80 rounded-3xl p-6 neon-box w-full max-w-md">
+<div class="space-y-4">
+      <div>
+       <label class="block text-green-300 font-bold mb-2">👤 Elige tu usuario</label> <input type="text" id="regUsername" placeholder="Ejemplo: estrella123" class="w-full px-4 py-3 rounded-2xl bg-slate-700 text-white border-2 border-green-500 font-semibold">
+      <div><label class="block text-green-300 font-bold mb-2">👤 Elige tu usuario</label> <input type="text" id="regUsername" placeholder="Ejemplo: estrella123" class="w-full px-4 py-3 rounded-2xl bg-slate-700 text-white border-2 border-green-500 font-semibold">
+</div>
+      <div>
+       <label class="block text-cyan-300 font-bold mb-2">🔒 Crea tu contraseña</label> <input type="password" id="regPassword" placeholder="Mínimo 4 caracteres" class="w-full px-4 py-3 rounded-2xl bg-slate-700 text-white border-2 border-cyan-500 font-semibold">
+      <div><label class="block text-cyan-300 font-bold mb-2">🔒 Crea tu contraseña</label> <input type="password" id="regPassword" placeholder="Mínimo 4 caracteres" class="w-full px-4 py-3 rounded-2xl bg-slate-700 text-white border-2 border-cyan-500 font-semibold">
+</div>
+      <div>
+       <label class="block text-purple-300 font-bold mb-2">📚 Selecciona tu grado</label> <select id="regGrade" class="w-full px-4 py-3 rounded-2xl bg-slate-700 text-white border-2 border-purple-500 font-semibold"> <option value="">-- Elige tu grado --</option> <option value="1ro">1er grado 🌱</option> <option value="2do">2do grado 📚</option> <option value="3ro">3er grado ✏️</option> <option value="4to">4to grado 📖</option> <option value="5to">5to grado 🎓</option> <option value="6to">6to grado ⭐</option> </select>
+      <div><label class="block text-purple-300 font-bold mb-2">📚 Selecciona tu grado</label> <select id="regGrade" class="w-full px-4 py-3 rounded-2xl bg-slate-700 text-white border-2 border-purple-500 font-semibold"> <option value="">-- Elige tu grado --</option> <option value="1ro">1er grado 🌱</option> <option value="2do">2do grado 📚</option> <option value="3ro">3er grado ✏️</option> <option value="4to">4to grado 📖</option> <option value="5to">5to grado 🎓</option> <option value="6to">6to grado ⭐</option> </select>
+</div>
+<p id="regError" class="text-red-400 text-center font-semibold hidden"></p><button onclick="handleRegister()" class="w-full py-4 bg-gradient-to-r from-green-500 to-cyan-500 rounded-2xl text-white font-black text-xl neon-green hover:scale-105 transition-transform"> ✅ ¡CREAR CUENTA! </button> <button onclick="showLogin()" class="w-full py-3 bg-slate-600 rounded-2xl text-white font-bold hover:bg-slate-500 transition-colors"> ← Volver al inicio </button>
+</div>
+</div>
+</div><!-- Main Dashboard -->
+   <div id="mainDashboard" class="h-full w-full hidden flex-col overflow-auto">
+    <!-- Top Bar -->
+   <div id="mainDashboard" class="h-full w-full hidden flex-col overflow-auto"><!-- Top Bar -->
+<div class="bg-slate-800/90 p-3 flex flex-wrap items-center justify-between gap-2 sticky top-0 z-50">
+     <div class="flex items-center gap-2">
+      <span class="text-2xl">👋</span> <span id="playerName" class="text-white font-bold text-lg"></span> <span id="playerGrade" class="text-purple-300 font-semibold text-sm ml-2"></span>
+     <div class="flex items-center gap-2"><span class="text-2xl">👋</span> <span id="playerName" class="text-white font-bold text-lg"></span> <span id="playerGrade" class="text-purple-300 font-semibold text-sm ml-2"></span>
+</div>
+<div class="flex flex-wrap gap-2">
+      <div class="bg-yellow-500/20 px-3 py-1 rounded-full flex items-center gap-1 neon-yellow">
+       <span class="text-xl">⭐</span> <span id="starsDisplay" class="text-yellow-300 font-black">0</span>
+      <div class="bg-yellow-500/20 px-3 py-1 rounded-full flex items-center gap-1 neon-yellow"><span class="text-xl">⭐</span> <span id="starsDisplay" class="text-yellow-300 font-black">0</span>
+</div>
+      <div class="bg-amber-500/20 px-3 py-1 rounded-full flex items-center gap-1">
+       <span class="text-xl">🪙</span> <span id="coinsDisplay" class="text-amber-300 font-black">0</span>
+      <div class="bg-amber-500/20 px-3 py-1 rounded-full flex items-center gap-1"><span class="text-xl">🪙</span> <span id="coinsDisplay" class="text-amber-300 font-black">0</span>
+</div>
+      <div class="bg-purple-500/20 px-3 py-1 rounded-full flex items-center gap-1">
+       <span class="text-xl">🔑</span> <span id="keysDisplay" class="text-purple-300 font-black">0</span>
+      <div class="bg-purple-500/20 px-3 py-1 rounded-full flex items-center gap-1"><span class="text-xl">🔑</span> <span id="keysDisplay" class="text-purple-300 font-black">0</span>
+</div>
+      <div class="bg-red-500/20 px-3 py-1 rounded-full flex items-center gap-1">
+       <span class="text-xl">❤️</span> <span id="livesDisplay" class="text-red-300 font-black">5</span>
+      <div class="bg-red-500/20 px-3 py-1 rounded-full flex items-center gap-1"><span class="text-xl">❤️</span> <span id="livesDisplay" class="text-red-300 font-black">5</span>
+</div>
+</div><button onclick="handleLogout()" class="bg-slate-600 px-3 py-1 rounded-full text-white text-sm hover:bg-slate-500"> Salir </button>
+</div><!-- Level & XP Bar -->
+<div class="bg-slate-800/50 px-4 py-2">
+<div class="flex items-center gap-3">
+      <div class="bg-gradient-to-r from-purple-600 to-pink-600 w-12 h-12 rounded-full flex items-center justify-center neon-pink">
+       <span id="levelDisplay" class="text-white font-black text-xl">1</span>
+      <div class="bg-gradient-to-r from-purple-600 to-pink-600 w-12 h-12 rounded-full flex items-center justify-center neon-pink"><span id="levelDisplay" class="text-white font-black text-xl">1</span>
+</div>
+<div class="flex-1">
+       <div class="flex justify-between text-sm mb-1">
+        <span class="text-purple-300 font-semibold">Nivel <span id="levelText">1</span></span> <span class="text-pink-300 font-semibold"><span id="xpCurrent">0</span>/<span id="xpNeeded">100</span> XP</span>
+       <div class="flex justify-between text-sm mb-1"><span class="text-purple-300 font-semibold">Nivel <span id="levelText">1</span></span> <span class="text-pink-300 font-semibold"><span id="xpCurrent">0</span>/<span id="xpNeeded">100</span> XP</span>
+</div>
+<div class="h-3 bg-slate-700 rounded-full overflow-hidden">
+<div id="xpBar" class="h-full progress-bar rounded-full" style="width: 0%"></div>
+@@ -220,8 +206,7 @@ <h2 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r fr
+</div><!-- Daily Streak -->
+<div class="mx-4 mt-3 bg-gradient-to-r from-orange-600/30 to-red-600/30 rounded-2xl p-4 border-2 border-orange-500">
+<div class="flex items-center justify-between">
+      <div class="flex items-center gap-2">
+       <span class="text-3xl streak-fire">🔥</span>
+      <div class="flex items-center gap-2"><span class="text-3xl streak-fire">🔥</span>
+<div>
+<p class="text-orange-300 font-bold text-lg">Racha diaria</p>
+<p class="text-white font-black text-2xl"><span id="streakDisplay">0</span> días</p>
+@@ -236,8 +221,7 @@ <h2 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r fr
+<div class="mx-4 mt-4 bg-slate-800/70 rounded-2xl p-4 neon-box">
+<div class="flex items-center justify-between mb-3">
+<h3 class="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-green-400">📋 Misiones del Día</h3>
+      <div class="text-sm bg-green-500/20 px-3 py-1 rounded-full">
+       <span id="tasksCompleted">0</span>/5
+      <div class="text-sm bg-green-500/20 px-3 py-1 rounded-full"><span id="tasksCompleted">0</span>/5
+</div>
+</div>
+<div id="dailyTasksList" class="space-y-2"></div>
+@@ -254,27 +238,23 @@ <h3 class="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r fro
+<h3 class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-pink-400 mb-4 text-center">🎮 ¡ELIGE TU JUEGO!</h3>
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3" id="gamesGrid"></div>
+</div><!-- Shop Button -->
+    <div class="mx-4 mb-4">
+     <button onclick="showShop()" class="w-full py-4 bg-gradient-to-r from-amber-500 to-orange-600 rounded-2xl text-white font-black text-xl neon-yellow hover:scale-105 transition-transform"> 🛒 TIENDA - Compra vidas y más </button>
+    <div class="mx-4 mb-4"><button onclick="showShop()" class="w-full py-4 bg-gradient-to-r from-amber-500 to-orange-600 rounded-2xl text-white font-black text-xl neon-yellow hover:scale-105 transition-transform"> 🛒 TIENDA - Compra vidas y más </button>
+</div>
+</div><!-- Game Screen -->
+<div id="gameScreen" class="h-full w-full hidden flex-col overflow-auto">
+    <div class="bg-slate-800/90 p-3 flex items-center justify-between sticky top-0 z-50">
+     <button onclick="exitGame()" class="bg-red-500 px-4 py-2 rounded-xl text-white font-bold hover:bg-red-600"> ← Salir </button>
+    <div class="bg-slate-800/90 p-3 flex items-center justify-between sticky top-0 z-50"><button onclick="exitGame()" class="bg-red-500 px-4 py-2 rounded-xl text-white font-bold hover:bg-red-600"> ← Salir </button>
+<div id="gameTimer" class="text-2xl font-black text-cyan-400">
+⏱️ 60
+</div>
+     <div class="flex gap-2">
+      <span class="text-xl">❤️</span> <span id="gameLives" class="text-red-300 font-black">5</span>
+     <div class="flex gap-2"><span class="text-xl">❤️</span> <span id="gameLives" class="text-red-300 font-black">5</span>
+</div>
+</div>
+<div class="flex-1 p-4">
+<div id="gameTitle" class="text-2xl font-black text-center text-white mb-4"></div>
+<div id="gameContent" class="bg-slate-800/70 rounded-2xl p-6 neon-box"></div>
+</div>
+<div class="bg-slate-800/90 p-4">
+     <div class="flex justify-between items-center">
+      <span class="text-green-400 font-bold">✅ Correctas: <span id="correctCount">0</span></span> <span class="text-red-400 font-bold">❌ Errores: <span id="wrongCount">0</span></span>
+     <div class="flex justify-between items-center"><span class="text-green-400 font-bold">✅ Correctas: <span id="correctCount">0</span></span> <span class="text-red-400 font-bold">❌ Errores: <span id="wrongCount">0</span></span>
+</div>
+</div>
+</div><!-- Shop Modal -->
+@@ -383,8 +363,9 @@ <h2 class="text-3xl font-black text-white mb-2">¡JUEGO COMPLETADO!</h2>
+</div>
+</div>
 <script>
-const SUPABASE_URL = "https://TU_PROJECT_ID.supabase.co";
-const SUPABASE_ANON_KEY = "TU_ANON_PUBLIC_KEY";
+    // Config and State
+const defaultConfig = {
+      app_title: 'Material SEP Interactivo',
+      app_title: 'EduEstrellas',
+welcome_message: '¡Aprende y gana estrellas!'
+};
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+@@ -400,6 +381,7 @@ <h2 class="text-3xl font-black text-white mb-2">¡JUEGO COMPLETADO!</h2>
+currentQuestion: 0
+};
 
-let currentUser = null;
-let userProfile = null;
+    // Daily Tasks Definition
+const dailyTasksTemplate = [
+{ id: 'alphabet', name: 'Resuelve el juego de Alfabetización', icon: '📚', subject: 'español' },
+{ id: 'math', name: 'Completa un juego de Matemáticas', icon: '🔢', subject: 'matematicas' },
+@@ -408,12 +390,14 @@ <h2 class="text-3xl font-black text-white mb-2">¡JUEGO COMPLETADO!</h2>
+{ id: 'any_game', name: 'Juega cualquier juego', icon: '🎮', subject: 'any' }
+];
 
+    // Weekly Tasks
+const weeklyTasksTemplate = [
+{ id: 'play_5', name: 'Juega 5 partidas', icon: '🎯', target: 5, type: 'games' },
+{ id: 'all_subjects', name: 'Juega todas las materias', icon: '📖', type: 'subjects' },
+{ id: 'streak_3', name: 'Mantén racha de 3 días', icon: '🔥', target: 3, type: 'streak' }
+];
+
+    // Games Data
+const games = [
+{ id: 'español', name: 'Español', icon: '📚', color: 'from-pink-500 to-red-500', subject: 'español' },
+{ id: 'matematicas', name: 'Matemáticas', icon: '🔢', color: 'from-blue-500 to-cyan-500', subject: 'matematicas' },
+@@ -424,6 +408,7 @@ <h2 class="text-3xl font-black text-white mb-2">¡JUEGO COMPLETADO!</h2>
+{ id: 'ingles', name: 'Inglés', icon: '🇬🇧', color: 'from-red-500 to-blue-500', subject: 'ingles' }
+];
+
+    // Questions Database
+const questionsDB = {
+español: [
+{ q: '¿Cuál es el plural de "lápiz"?', options: ['Lápizes', 'Lápices', 'Lapizes', 'Lapices'], correct: 1 },
+@@ -497,6 +482,7 @@ <h2 class="text-3xl font-black text-white mb-2">¡JUEGO COMPLETADO!</h2>
+]
+};
+
+    // SDK Initialization
+const dataHandler = {
+onDataChanged(data) {
+allUsers = data;
+@@ -510,6 +496,7 @@ <h2 class="text-3xl font-black text-white mb-2">¡JUEGO COMPLETADO!</h2>
+}
+};
+
+    // Initialize SDKs
+async function initApp() {
+try {
+await window.dataSdk.init(dataHandler);
+@@ -542,6 +529,7 @@ <h2 class="text-3xl font-black text-white mb-2">¡JUEGO COMPLETADO!</h2>
+renderGamesGrid();
+}
+
+    // Auth Functions
 function showLogin() {
-  document.getElementById("loginView").classList.remove("hidden");
-  document.getElementById("registerView").classList.add("hidden");
-}
-
-function showRegister() {
-  document.getElementById("registerView").classList.remove("hidden");
-  document.getElementById("loginView").classList.add("hidden");
-}
-
-function showDashboard() {
-  document.getElementById("loginView").classList.add("hidden");
-  document.getElementById("registerView").classList.add("hidden");
-  document.getElementById("dashboardView").classList.remove("hidden");
-}
-
-async function handleRegister() {
-  const email = document.getElementById("registerEmail").value;
-  const password = document.getElementById("registerPassword").value;
-  const errorBox = document.getElementById("registerError");
-  errorBox.textContent = "";
-
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password
-  });
-
-  if (error) {
-    errorBox.textContent = error.message;
-    return;
-  }
-
-  currentUser = data.user;
-
-  await supabase.from("user_profiles").insert({
-    user_id: currentUser.id,
-    stars: 0,
-    coins: 0,
-    lives: 3
-  });
-
-  await loadUserProfile();
-  showDashboard();
-}
-
-async function handleLogin() {
-  const email = document.getElementById("loginEmail").value;
-  const password = document.getElementById("loginPassword").value;
-  const errorBox = document.getElementById("loginError");
-  errorBox.textContent = "";
-
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password
-  });
-
-  if (error) {
-    errorBox.textContent = error.message;
-    return;
-  }
-
-  currentUser = data.user;
-  await loadUserProfile();
-  showDashboard();
-}
-
-async function loadUserProfile() {
-  const { data, error } = await supabase
-    .from("user_profiles")
-    .select("*")
-    .eq("user_id", currentUser.id)
-    .single();
-
-  if (error) return false;
-
-  userProfile = data;
-  updateUI();
-  return true;
-}
-
-function updateUI() {
-  document.getElementById("stars").textContent = userProfile.stars;
-  document.getElementById("coins").textContent = userProfile.coins;
-  document.getElementById("lives").textContent = userProfile.lives;
-}
-
-async function addStar() {
-  userProfile.stars += 1;
-
-  await supabase
-    .from("user_profiles")
-    .update({ stars: userProfile.stars })
-    .eq("user_id", currentUser.id);
-
-  updateUI();
-}
-
-async function logout() {
-  await supabase.auth.signOut();
-  location.reload();
-}
-
-supabase.auth.onAuthStateChange(async (event, session) => {
-  if (session) {
-    currentUser = session.user;
-    const loaded = await loadUserProfile();
-    if (loaded) {
-      showDashboard();
-    }
-  }
-});
+document.getElementById('registerScreen').classList.add('hidden');
+document.getElementById('registerScreen').classList.remove('flex');
+@@ -1167,5 +1155,5 @@ <h3 class="text-xl font-bold text-white mb-6">${q.q}</h3>
+// Initialize
+initApp();
 </script>
-
-</body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9d30748e339eada4',t:'MTc3MTk1MTc1Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9d3070c5618f8bb8',t:'MTc3MTk1MTYwMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
